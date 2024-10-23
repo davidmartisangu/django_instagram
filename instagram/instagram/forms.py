@@ -19,4 +19,8 @@ class RegistrationForm(forms.ModelForm):
         user.save()
 
         return user
+    
+class LoginForm(forms.Form):
+    username = forms.CharField(label="Usuario")
+    password = forms.CharField(label="Password", widget=forms.PasswordInput())
  
