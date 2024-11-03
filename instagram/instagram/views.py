@@ -1,65 +1,81 @@
 from django.shortcuts import render
-from django.views.generic import TemplateView, DetailView
-from django.views.generic.edit import CreateView, FormView, UpdateView
-from django.urls import reverse_lazy, reverse
+
+from django.views.generic import TemplateView
+from django.views.generic.edit import CreateView
+from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.views.generic.edit import FormView
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import HttpResponseRedirect
-
+from django.urls import reverse_lazy, reverse
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from .forms import RegistrationForm, LoginForm
-from profiles.models import UserProfile
+from django.views.generic import DetailView
 
-# Create your views here.
+from profiles.models import UserProfile
+from django.views.generic.edit import UpdateView
+from posts.models import Post
 
 class HomeView(TemplateView):
-    template_name="general/home.html"
+    template_name = "general/home.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        last_posts = Post.objects.all().order_by('-created_at')[:5]
+        context['last_posts'] = last_posts
+
+        return context
+
 
 
 class LoginView(FormView):
-    template_name="general/login.html"
+    template_name = "general/login.html"
     form_class = LoginForm
 
-    def form_valid(self,form):
-        usuario = form.cleaned_data.get("username")
-        password = form.cleaned_data.get("password")
+    def form_valid(self, form):
+        usuario = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password')
         user = authenticate(username=usuario, password=password)
 
         if user is not None:
             login(self.request, user)
             messages.add_message(self.request, messages.SUCCESS, f'Bienvenido de nuevo {user.username}')
-            return HttpResponseRedirect(reverse ('home'))
-        
+            return HttpResponseRedirect(reverse('home'))
+
         else:
-            messages.add_message(self.request, messages.ERROR, f'Usuario no valido o contraseña incorrecta')
+            messages.add_message(
+                self.request, messages.ERROR, 'Usuario no válido o contraseña no válida')
             return super(LoginView, self).form_invalid(form)
 
 
 class RegisterView(CreateView):
-    template_name="general/register.html"
+    template_name = "general/register.html"
     model = User
-    success_url = reverse_lazy("login")
+    success_url = reverse_lazy('login')
     form_class = RegistrationForm
-    
+
     def form_valid(self, form):
         messages.add_message(self.request, messages.SUCCESS, "Usuario creado correctamente.")
         return super(RegisterView, self).form_valid(form)
-    
 
+
+class LegalView(TemplateView):
+    template_name = "general/legal.html"
+
+
+class ContactView(TemplateView):
+    template_name = "general/contact.html"
+
+@method_decorator(login_required, name='dispatch')
 class ProfileDetailView(DetailView):
     model = UserProfile
     template_name = "general/profile_detail.html"
     context_object_name = "profile"
 
-
-class LegalView(TemplateView):
-    template_name="general/legal.html"
-
-
-class ContactView(TemplateView):
-    template_name="general/contact.html"
-
-
+@method_decorator(login_required, name='dispatch')
 class ProfileUpdateView(UpdateView):
     model = UserProfile
     template_name = "general/profile_update.html"
@@ -69,11 +85,12 @@ class ProfileUpdateView(UpdateView):
     def form_valid(self, form):
         messages.add_message(self.request, messages.SUCCESS, "Perfil editado correctamente.")
         return super(ProfileUpdateView, self).form_valid(form)
-
+    
     def get_success_url(self):
         return reverse('profile_detail', args=[self.object.pk])
 
+@login_required
 def logout_view(request):
     logout(request)
-    messages.add_message(request, messages.INFO, "Se ha cerrado la sesión correctamente")
-    return HttpResponseRedirect(reverse("home"))
+    messages.add_message(request, messages.INFO, "Se ha cerrado sesión correctamente.")
+    return HttpResponseRedirect(reverse('home'))
