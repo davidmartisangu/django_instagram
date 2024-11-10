@@ -16,6 +16,9 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
     
+    def follow(self, profile):
+        Follow.objects.get_or_create(follower=self, following=profile)
+    
 class Follow(models.Model):
     follower=models.ForeignKey(UserProfile, verbose_name="¿Quien sigue?", on_delete=models.CASCADE, related_name="follower_set")
     # ForeignKey => Relación muchos a uno (muchos perfiles pueden seguir a un perfil, y un perfil puede seguir a muchos otros).
@@ -30,4 +33,3 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"{self.follower} follows{self.following}"
-    
