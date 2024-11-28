@@ -8,6 +8,13 @@
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
     crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+      .likeButton {
+        text-decoration: none;
+        color: black
+      }
+    </style>
 </head>
 <body>
     {% include '_includes/_header.html' %}
@@ -21,5 +28,34 @@
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
 
+    <script>
+      document.addEventListener("DOMContentLoaded",()=>{
+
+        const likeButtons = document.querySelectorAll("a.likeButton")
+        likeButtons.forEach(likeButton => {
+          let nLikesSpan = likeButton.querySelector("span")
+          let nLikes = parseInt(nLikesSpan.innerHTML)
+          likeButton.addEventListener("click", (event)=>{
+            //Prevenimo el comportamiento por defecto
+            event.preventDefault()
+            //Hacemos una petición GET al href del botón
+            fetch(likeButton.href)
+              .then(response => response.json())
+              .then(data => {
+                //Si la petición salio bien, cambiamos el contendio del botón
+                if(data.liked){
+                  nLikes += 1
+                  likeButton.innerHTML = `<span>${nLikes}</span> <i class="bi bi-suit-heart-fill"></i>`;
+        
+                } else{
+                  nLikes -= 1
+                  likeButton.innerHTML = `<span>${nLikes}</span> <i class="bi bi-heart"></i>`;
+                }
+              })
+        })
+        })
+      })
+        
+    </script>
 </body>
 </html>

@@ -1,30 +1,21 @@
 from django.shortcuts import render
 
-from django.views.generic import TemplateView
-from django.views.generic.edit import CreateView
-from django.urls import reverse_lazy
+from django.views.generic import TemplateView, DetailView, ListView
+from django.views.generic.edit import CreateView, FormView, UpdateView
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.views.generic.edit import FormView
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import HttpResponseRedirect
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+
 from .forms import RegistrationForm, LoginForm
-from django.views.generic import DetailView
-
-from profiles.models import Follow
-
-from profiles.forms import FollowForm
-from django.views.generic import ListView
-
-from profiles.models import UserProfile
-from django.views.generic.edit import UpdateView
-from posts.models import Post
-
-from django.views.generic import ListView
 from .forms import ProfileFollow
+
+from profiles.models import Follow, UserProfile
+from profiles.forms import FollowForm
+from posts.models import Post
 
 class HomeView(TemplateView):
     template_name = "general/home.html"
@@ -137,7 +128,9 @@ class ProfileListView(ListView):
     context_object_name = "profiles"
 
     def get_queryset(self):
-        return UserProfile.objects.all().order_by('user__username').exclude(user=self.request.user)
+        if self.request.user.is_authenticated:
+            return UserProfile.objects.all().order_by('user__username').exclude(user=self.request.user)
+        return UserProfile.objects.all().order_by('user__username')
 
 
 @method_decorator(login_required, name='dispatch')

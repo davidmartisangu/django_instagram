@@ -1,4 +1,4 @@
-from .models import Post
+from .models import Post, Comment
 from django import forms
 
 
@@ -9,3 +9,8 @@ class PostCreateForm(forms.ModelForm):
           'image',
           'caption'
         ]
+
+class CommentCreateForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['text']  # Solo el campo de texto
