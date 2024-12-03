@@ -14,8 +14,11 @@ class RegistrationForm(forms.ModelForm):
         ]
     
     def save(self):
+        # LLamas al metodo save de la clase ModelForm
         user = super().save(commit=True)
+        # Ecriptas el password utilizando el método set_password del modelo User
         user.set_password(self.cleaned_data["password"])
+        # Se vuelve a guardar la constraseña esta vez encriptada
         user.save()
 
         from profiles.models import UserProfile
